@@ -23,7 +23,7 @@
   }
   #poem {
     font-family: 'Press Start 2P', monospace;
-    color: #ffddee; font-size: 12px;
+    color: #ffddee; font-size: 13px;
     text-shadow: 1px 1px 0 #8b0040, 0 0 8px #ff6b9d66;
     text-align: center; line-height: 2.2;
     position: absolute; bottom: 32vh; width: 100%;
@@ -44,22 +44,18 @@
     pointer-events: none;
     animation: bounce 1s ease-in-out infinite;
   }
-  @keyframes bounce {
-    0%,100% { transform: translateX(-50%) translateY(0); }
-    50% { transform: translateX(-50%) translateY(8px); }
-  }
   @keyframes pulse {
     0%,100% { transform: scale(1); }
     50% { transform: scale(1.03); }
   }
-  @keyframes blink {
-    0%,100% { opacity: 0.85; }
-    50% { opacity: 0.4; }
+  @keyframes bounce {
+    0%,100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(8px); }
   }
   @media (max-width: 600px) {
     #title { font-size: 14px; margin-top: 14vh; }
     #poem { font-size: 9px; line-height: 2.4; bottom: 28vh; }
-    #hint { font-size: 7px; }
+    #hint { font-size: 8px; }
   }
 </style>
 </head>
@@ -102,10 +98,8 @@ function resize() {
 }
 resize();
 
-function pRect(x, y, s, col) {
-  ctx.fillStyle = col;
-  ctx.fillRect(Math.floor(x), Math.floor(y), s, s);
-}
+function pRect(x,y,s,col) { ctx.fillStyle=col; ctx.fillRect(Math.floor(x),Math.floor(y),s,s); }
+function pBox(x,y,w,h,col) { ctx.fillStyle=col; ctx.fillRect(Math.floor(x),Math.floor(y),w,h); }
 
 const LETTERS = {
   S:[[0,1,1,1,0],[1,0,0,0,1],[1,0,0,0,0],[0,1,1,1,0],[0,0,0,0,1],[1,0,0,0,1],[0,1,1,1,0]],
@@ -131,19 +125,19 @@ const COLOR_SETS = [
   { bud:'#8833aa', petal:'#aa55dd', inner:'#cc99ee', mid:'#ddbbff', center:'#ffcc00' }
 ];
 
-let bgFlowers = [], bgFlowerQueue = [], clearZone = {x:0,y:0,w:0,h:0};
+let bgFlowers=[], bgFlowerQueue=[], clearZone={x:0,y:0,w:0,h:0};
 
 function makeBgFlowerPositions() {
-  let positions = [];
-  const spacing = isMobile ? 34 : 42;
-  const sp = isMobile ? 36 : 55;
-  const totalBudW = NAME.length * sp + 40;
-  const startX = (W - totalBudW) / 2;
-  const baseY = H * 0.44;
-  const margin = isMobile ? 10 : 20;
-  clearZone = { x: startX-margin, y: baseY-(isMobile?90:130), w: totalBudW+margin*2, h: isMobile?120:165 };
-  for (let gy=-20; gy<H+spacing; gy+=spacing) for (let gx=-20; gx<W+spacing; gx+=spacing) {
-    let jx=gx+(Math.random()-0.5)*spacing*0.7, jy=gy+(Math.random()-0.5)*spacing*0.7;
+  let positions=[];
+  const spacing=isMobile?34:42;
+  const sp=isMobile?36:55;
+  const totalBudW=NAME.length*sp+40;
+  const startX=(W-totalBudW)/2;
+  const baseY=H*0.44;
+  const margin=isMobile?10:20;
+  clearZone={x:startX-margin,y:baseY-(isMobile?90:130),w:totalBudW+margin*2,h:isMobile?120:165};
+  for(let gy=-20;gy<H+spacing;gy+=spacing) for(let gx=-20;gx<W+spacing;gx+=spacing){
+    let jx=gx+(Math.random()-0.5)*spacing*0.7,jy=gy+(Math.random()-0.5)*spacing*0.7;
     if(jx>clearZone.x-10&&jx<clearZone.x+clearZone.w+10&&jy>clearZone.y-10&&jy<clearZone.y+clearZone.h+10) continue;
     positions.push({x:jx,y:jy});
   }
@@ -169,25 +163,24 @@ function initLetterBuds() {
   const sp=isMobile?36:55, totalW=NAME.length*sp, startX=(W-totalW)/2, baseY=H*0.44+(isMobile?12:20);
   for(let i=0;i<NAME.length;i++){
     let cs=COLOR_SETS[i];
-    letterBuds.push({x:startX+i*sp+sp/2,y:baseY,letter:NAME[i],bloomed:false,bloomProgress:0,wobble:Math.random()*Math.PI*2,stemH:isMobile?45+Math.random()*12:65+Math.random()*20,budCol:cs.bud,petalCol:cs.petal,innerCol:cs.inner,midCol:cs.mid,centerCol:cs.center,leafPhase:Math.random()*Math.PI});
+    letterBuds.push({x:startX+i*sp+sp/2,y:baseY,letter:NAME[i],bloomed:false,bloomProgress:0,visible:i===0,growIn:i===0?1:0,wobble:Math.random()*Math.PI*2,stemH:isMobile?45+Math.random()*12:65+Math.random()*20,budCol:cs.bud,petalCol:cs.petal,innerCol:cs.inner,midCol:cs.mid,centerCol:cs.center,leafPhase:Math.random()*Math.PI});
   }
 }
 
 function updateHintPos() {
-  let hint=document.getElementById('hint');
-  let hintArrow=document.getElementById('hintArrow');
-  if(allBloomed){hint.style.display='none';hintArrow.style.display='none';return;}
+  let hint=document.getElementById('hint'), arrow=document.getElementById('hintArrow');
+  if(allBloomed){hint.style.display='none';arrow.style.display='none';return;}
   let idx=-1;
-  for(let i=0;i<letterBuds.length;i++) if(!letterBuds[i].bloomed){idx=i;break;}
-  if(idx<0){hint.style.display='none';hintArrow.style.display='none';return;}
+  for(let i=0;i<letterBuds.length;i++) if(!letterBuds[i].bloomed&&letterBuds[i].visible&&letterBuds[i].growIn>=0.9){idx=i;break;}
+  if(idx<0){hint.style.display='none';arrow.style.display='none';return;}
   let b=letterBuds[idx];
-  let budTopY = b.y - b.stemH * 0.3 - (isMobile?10:14);
-  hint.style.top=(budTopY - (isMobile?58:78)) + 'px';
-  hint.style.left=b.x + 'px';
+  let budTopY=b.y-b.stemH*0.3-(isMobile?10:14);
+  hint.style.top=(budTopY-(isMobile?58:78))+'px';
+  hint.style.left=b.x+'px';
   hint.style.display='block';
-  hintArrow.style.top=(budTopY - (isMobile?38:50)) + 'px';
-  hintArrow.style.left=b.x + 'px';
-  hintArrow.style.display='block';
+  arrow.style.top=(budTopY-(isMobile?38:50))+'px';
+  arrow.style.left=b.x+'px';
+  arrow.style.display='block';
   hint.textContent=isMobile?'Tap!':'Click!';
 }
 
@@ -234,27 +227,36 @@ function drawPixelLetter(letter,cx,cy,scale,col,alpha) {
 function drawBud(b,t) {
   let ps=isMobile?0.7:1;
   let sway=Math.sin(t*0.002+b.wobble)*4*ps,bx=b.x+sway,by=b.y,p=b.bloomProgress;
-  let stemTop=by-b.stemH*Math.min(p+0.3,1);
+  let gi=b.growIn;
+  let stemTop=by-b.stemH*Math.min(p+0.3,1)*gi;
   for(let sy=by;sy>stemTop;sy-=3){let sw=Math.sin((sy-by)*0.04+t*0.002+b.wobble)*3;pRect(bx+sw-1,sy,4,'#2d8b2d');}
-  let leafY=by-b.stemH*0.4,ls=Math.sin(t*0.003+b.leafPhase)*3;
-  let lc1=b.petalCol,lc2=b.midCol,leafS=isMobile?4:6;
-  pRect(bx-14*ps+ls,leafY,leafS,lc1);pRect(bx-10*ps+ls,leafY-4*ps,leafS,lc2);pRect(bx-7*ps+ls,leafY-7*ps,leafS-1,lc1);
-  pRect(bx+8*ps-ls,leafY+6*ps,leafS,lc2);pRect(bx+6*ps-ls,leafY+2*ps,leafS,lc1);pRect(bx+10*ps-ls,leafY+9*ps,leafS-1,lc2);
+  let leafY=by-b.stemH*0.4*gi,ls=Math.sin(t*0.003+b.leafPhase)*3;
+  let leafS=isMobile?4:6;
+  if(gi>0.4){
+    let la=Math.min((gi-0.4)/0.3,1);
+    ctx.globalAlpha=la;
+    pRect(bx-14*ps+ls,leafY,leafS,'#3da33d');pRect(bx-10*ps+ls,leafY-4*ps,leafS,'#2d8b2d');pRect(bx-7*ps+ls,leafY-7*ps,leafS-1,'#3da33d');
+    pRect(bx+8*ps-ls,leafY+6*ps,leafS,'#2d8b2d');pRect(bx+6*ps-ls,leafY+2*ps,leafS,'#3da33d');pRect(bx+10*ps-ls,leafY+9*ps,leafS-1,'#2d8b2d');
+    ctx.globalAlpha=1;
+  }
   let flowerY=stemTop;
   if(!b.bloomed){
+    if(gi<0.7) return;
+    let ba=Math.min((gi-0.7)/0.3,1);
+    ctx.globalAlpha=ba;
     let bs=isMobile?10:14;
-    pRect(bx-bs/2,flowerY-bs,bs,bs,b.budCol);pRect(bx-bs/2+2,flowerY-bs-4*ps,bs-4,4*ps,b.innerCol);
-    pRect(bx-bs/2-3*ps,flowerY-3,bs+6*ps,5*ps,b.petalCol);pRect(bx-bs/2-1,flowerY-6*ps,3,4*ps,b.midCol);pRect(bx+bs/2-2,flowerY-6*ps,3,4*ps,b.midCol);
+    pBox(bx-bs/2,flowerY-bs,bs,bs,b.budCol);pBox(bx-bs/2+2,flowerY-bs-4*ps,bs-4,4*ps,b.innerCol);
+    pBox(bx-bs/2-3*ps,flowerY-3,bs+6*ps,5*ps,b.petalCol);pBox(bx-bs/2-1,flowerY-6*ps,3,4*ps,b.midCol);pBox(bx+bs/2-2,flowerY-6*ps,3,4*ps,b.midCol);
     ctx.globalAlpha=0.4+Math.sin(t*0.004+b.wobble)*0.25;pRect(bx-2,flowerY-bs+3,4,4,'#ffffff');ctx.globalAlpha=1;
   } else {
     let bp=Math.min(p,1),spread=bp*22*ps,pz=Math.floor((7+bp*7)*ps);
-    for(let a=0;a<8;a++){let ang=(a/8)*Math.PI*2+Math.sin(t*0.001)*0.1,px=bx+Math.cos(ang)*spread,py=flowerY-8*ps+Math.sin(ang)*spread*0.7;pRect(px-pz/2,py-pz/2,pz,pz,b.petalCol);}
+    for(let a=0;a<8;a++){let ang=(a/8)*Math.PI*2+Math.sin(t*0.001)*0.1,px=bx+Math.cos(ang)*spread,py=flowerY-8*ps+Math.sin(ang)*spread*0.7;pBox(px-pz/2,py-pz/2,pz,pz,b.petalCol);}
     let ms=Math.floor(8*ps);
-    for(let a=0;a<6;a++){let ang=(a/6)*Math.PI*2+0.3,px=bx+Math.cos(ang)*spread*0.55,py=flowerY-8*ps+Math.sin(ang)*spread*0.4;pRect(px-ms/2,py-ms/2,ms,ms,b.midCol);}
+    for(let a=0;a<6;a++){let ang=(a/6)*Math.PI*2+0.3,px=bx+Math.cos(ang)*spread*0.55,py=flowerY-8*ps+Math.sin(ang)*spread*0.4;pBox(px-ms/2,py-ms/2,ms,ms,b.midCol);}
     let is2=Math.floor(6*ps);
-    for(let a=0;a<4;a++){let ang=(a/4)*Math.PI*2+0.5,px=bx+Math.cos(ang)*spread*0.3,py=flowerY-8*ps+Math.sin(ang)*spread*0.2;pRect(px-is2/2,py-is2/2,is2,is2,b.innerCol);}
+    for(let a=0;a<4;a++){let ang=(a/4)*Math.PI*2+0.5,px=bx+Math.cos(ang)*spread*0.3,py=flowerY-8*ps+Math.sin(ang)*spread*0.2;pBox(px-is2/2,py-is2/2,is2,is2,b.innerCol);}
     let cs2=Math.floor(10*ps);
-    pRect(bx-cs2/2,flowerY-13*ps,cs2,cs2,'#ffee44');pRect(bx-cs2/2+1,flowerY-12*ps,cs2-2,cs2-2,b.centerCol);
+    pBox(bx-cs2/2,flowerY-13*ps,cs2,cs2,'#ffee44');pBox(bx-cs2/2+1,flowerY-12*ps,cs2-2,cs2-2,b.centerCol);
     if(bp>0.3){
       let la=Math.min((bp-0.3)/0.5,1),lsc=isMobile?3:4,ly=flowerY-(isMobile?32:48)-Math.sin(t*0.003+b.wobble)*5;
       ctx.globalAlpha=la*0.15;ctx.fillStyle=b.petalCol;ctx.fillRect(bx-12,ly-14,24,28);ctx.globalAlpha=1;
@@ -277,7 +279,7 @@ function drawHeart(x,y,s,col,alpha){
 
 function handleClick(mx,my) {
   let nextIdx=-1;
-  for(let i=0;i<letterBuds.length;i++) if(!letterBuds[i].bloomed){nextIdx=i;break;}
+  for(let i=0;i<letterBuds.length;i++) if(!letterBuds[i].bloomed&&letterBuds[i].visible&&letterBuds[i].growIn>=0.9){nextIdx=i;break;}
   if(nextIdx<0) return;
   let b=letterBuds[nextIdx],dx=mx-b.x,dy=my-b.y;
   if(Math.abs(dx)<35&&dy>-b.stemH-30&&dy<10){
@@ -285,6 +287,10 @@ function handleClick(mx,my) {
     spawnHearts(b.x,b.y-b.stemH,b.petalCol);
     spawnSparkles(b.x,b.y-b.stemH);
     spawnBgFlowerBatch(COLOR_SETS[nextIdx]);
+    // Reveal next bud
+    if(nextIdx+1 < letterBuds.length){
+      letterBuds[nextIdx+1].visible=true;
+    }
     updateHintPos();
     if(!allBloomed&&letterBuds.every(b=>b.bloomed)){
       allBloomed=true;revealTimer=0;
@@ -308,8 +314,12 @@ function loop(t) {
   bgFlowers.forEach(f=>drawBgFlower(f,t));
   bgFlowerQueue.forEach(f=>{if(f.delay<=0)drawBgFlower(f,t);});
 
-  letterBuds.forEach(b=>{if(b.bloomed&&b.bloomProgress<1)b.bloomProgress+=0.015;});
-  letterBuds.forEach(b=>drawBud(b,t));
+  letterBuds.forEach(b=>{
+    if(b.bloomed&&b.bloomProgress<1)b.bloomProgress+=0.015;
+    if(b.visible&&b.growIn<1)b.growIn=Math.min(b.growIn+0.025,1);
+  });
+  letterBuds.forEach(b=>{if(b.visible)drawBud(b,t);});
+  updateHintPos();
 
   hearts=hearts.filter(h=>{h.x+=h.vx;h.y+=h.vy;h.vy-=0.02;h.life-=0.01;if(h.life>0){drawHeart(h.x,h.y,h.size/3,h.col,h.life);return true;}return false;});
   sparkles=sparkles.filter(s=>{s.x+=s.vx;s.y+=s.vy;s.life-=0.018;if(s.life>0){ctx.globalAlpha=s.life;pRect(s.x,s.y,4,s.col);ctx.globalAlpha=1;return true;}return false;});
