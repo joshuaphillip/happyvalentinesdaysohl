@@ -333,7 +333,6 @@ function initBuds(){buds=[];const sp=isMobile?36:55,tw=NAME.length*sp,sx=(W-tw)/
 function updateHint(){let h=document.getElementById('hint'),a=document.getElementById('hintArrow');if(allDone){h.style.display='none';a.style.display='none';return;}let idx=-1;for(let i=0;i<buds.length;i++)if(!buds[i].bloomed&&buds[i].visible&&buds[i].growIn>=0.9){idx=i;break;}if(idx<0){h.style.display='none';a.style.display='none';return;}let b=buds[idx],topY=b.y-b.stemH*b.growIn*0.3-(isMobile?10:14);h.style.top=(topY-(isMobile?58:78))+'px';h.style.left=b.x+'px';h.style.display='block';a.style.top=(topY-(isMobile?38:50))+'px';a.style.left=b.x+'px';a.style.display='block';h.textContent=isMobile?'Tap!':'Click!';}
 
 // === AUDIO ===
-// *** REPLACE THE URL BELOW WITH YOUR MP3 LOCATION ***
 const MUSIC_URL = 'Fearless_8bit(Taylors Version).mp3';
 let audio=null,musicPlaying=false;
 function startMusic(){
@@ -347,6 +346,24 @@ function startMusic(){
   btn.style.display='block';
   btn.textContent='🔊 Mute';
 }
+// 🔹 Pause when tab is hidden, resume when visible
+document.addEventListener('visibilitychange', () => {
+  if (!audio) return;
+
+  if (document.hidden) {
+    audio.pause();
+  } else if (musicPlaying) {
+    audio.play().catch(()=>{});
+  }
+});
+
+// 🔹 Stop completely when page is closed or refreshed
+window.addEventListener('beforeunload', () => {
+  if (!audio) return;
+  audio.pause();
+  audio.src = '';
+  audio = null;
+});
 document.getElementById('muteBtn').addEventListener('click',function(){
   if(!audio)return;
   if(musicPlaying){audio.pause();musicPlaying=false;this.textContent='🔇 Play';}
