@@ -339,6 +339,7 @@ let audio=null,musicPlaying=false;
 function startMusic(){
   if(audio)return;
   audio=new Audio(MUSIC_URL);
+	audio.volume = 0.5;
   audio.loop=true;
   audio.play().catch(()=>{});
   musicPlaying=true;
